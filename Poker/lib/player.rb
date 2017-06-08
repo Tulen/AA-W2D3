@@ -1,6 +1,8 @@
 require_relative 'hand'
 
 class Player
+  attr_reader :hand
+
   def initialize(hand, name = nil, funds = 0)
     @hand = hand
     @name = name
@@ -11,8 +13,12 @@ class Player
   #   bet
   # end
 
+  def render_hand
+    p hand.map {|card| [card.value, card.suit]}
+  end
+
   def swap
-    puts 'Which cards would you like to swap? (1,2,5)'
+    puts "#{@name}, which cards would you like to swap? (1,2,5)"
     to_swap = gets.chomp
     to_swap.split(',').map(&:to_i)
   end

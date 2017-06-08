@@ -9,8 +9,9 @@ class Game
     @deck = Deck.new
     @pot = 0
     @active_players
-    @bet_positon
+    @last_bettor
     @current_bet = 0
+    @over = false
   end
 
   def setup
@@ -24,38 +25,70 @@ class Game
   end
 
   def play
-    round until game_over?
+    round
+    # round until game_over?
   end
 
   def round
-    until round_over?
-      until @bet_position == 0
-        @bet_position = 0
+    until @over == true
+      until @last_bettor == 0
+        @last_bettor = 0
         @active_players.each_index do |i|
-          turn(i)
+          get_bets(i)
           p "#{@current_bet} is the current bet."
         end
-        @active_players.rotate(@bet_position)
+        # Fix Betting Turn Reset
+        @active_players.rotate(@last_bettor)
       end
+      p @active_players.first.hand
+      get_swaps
+      p @active_players.first.hand
+
+      @last_bettor = nil
+      until @last_bettor == 0
+        @last_bettor = 0
+        @active_players.each_index do |i|
+          get_bets(i)
+          p "#{@current_bet} is the current bet."
+        end
+        @active_players.rotate(@last_bettor)
+      end
+      @over = true
     end
   end
 
-  def turn(idx)
+  def get_bets(idx)
     player_bet = @active_players[idx].bet
     case player_bet
     when 0 # check / call
       0
-    when -1 #fold
+    when -1 #FIX FOLDING LOGIC
       @active_players.delete(@active_players[idx])
     else # raise
-      @bet_position = idx
+      @last_bettor = idx
       @current_bet += player_bet
     end
+  end
 
+  def get_swaps
+    @active_players.each do |player|
+      player.render_hand
+      hand_swap(player, player.swap)
+      # player.render_hand
+    end
+  end
+
+  def hand_swap(player, to_swap)
+    to_swap.each do |idx|
+      player.hand.delete(player.hand[idx])
+    end
+    until player.hand.length == 5
+      player.hand.push(@deck.deck_list.pop)
+    end
   end
 
   def round_over?
-    false
+    # @over = false
   end
 
   def game_over?
